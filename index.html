@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wordle — BodhiProtocol</title>
+  <meta property="og:title" content="Wordle — BodhiProtocol" />
+  <meta property="og:description" content="Wordle with Kids & Adult modes. Guess. Think. Win." />
+  <meta property="og:image" content="assets/preview.svg" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f0f2f5;
+      --surface: #ffffff;
+      --border: #d0d7de;
+      --text-primary: #1f2328;
+      --text-secondary: #656d76;
+      --radius: 6px;
+      --correct: #538d4e;
+      --present: #b59f3b;
+      --absent: #787c7e;
+      --absent-tile: #3a3a3c;
+      --key-bg: #d3d6da;
+      --key-text: #1f2328;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0d1117;
+        --surface: #161b22;
+        --border: #30363d;
+        --text-primary: #e6edf3;
+        --text-secondary: #8b949e;
+        --key-bg: #818384;
+        --key-text: #ffffff;
+      }
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text-primary);
+      font-family: system-ui, -apple-system, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 1rem;
+      gap: 0.75rem;
+    }
+
+    /* ── Banner ─────────────────────────────── */
+    #banner { width: 100%; max-width: 720px; border-radius: 12px; overflow: hidden; }
+    #banner svg { display: block; width: 100%; height: auto; }
+
+    /* ── Mode toggle ────────────────────────── */
+    #mode-toggle {
+      display: flex;
+      gap: 8px;
+      width: 100%;
+      max-width: 380px;
+    }
+    #mode-toggle button {
+      flex: 1;
+      padding: 7px 0;
+      border-radius: var(--radius);
+      border: 1.5px solid var(--border);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      background: var(--surface);
+      color: var(--text-secondary);
+      transition: all 0.15s;
+    }
+    #mode-toggle button.active {
+      background: var(--correct);
+      color: #fff;
+      border-color: var(--correct);
+    }
+
+    /* ── Grid ───────────────────────────────── */
+    #grid-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .tile-row { display: flex; gap: 5px; }
+    .tile {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      border: 2px solid var(--border);
+      border-radius: 4px;
+      background: var(--surface);
+      color: var(--text-primary);
+      user-select: none;
+    }
+    .tile[data-state="tbd"]     { border-color: var(--absent); }
+    .tile[data-state="correct"] { background: var(--correct);  color: #fff; border-color: var(--correct); }
+    .tile[data-state="present"] { background: var(--present);  color: #fff; border-color: var(--present); }
+    .tile[data-state="absent"]  { background: var(--absent-tile); color: #fff; border-color: var(--absent-tile); }
+
+    /* ── Legend ─────────────────────────────── */
+    #legend { font-size: 12px; color: var(--text-secondary); text-align: center; }
+
+    /* ── Message ────────────────────────────── */
+    #msg {
+      min-height: 22px;
+      font-size: 14px;
+      font-weight: 600;
+      text-align: center;
+      color: var(--text-primary);
+    }
+
+    /* ── Action row ─────────────────────────── */
+    #action-row { display: flex; gap: 10px; }
+    #action-row button {
+      padding: 8px 22px;
+      border-radius: var(--radius);
+      border: none;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    #hint-btn    { background: var(--present); color: #fff; }
+    #hint-btn:disabled { opacity: 0.4; cursor: default; }
+    #new-game-btn { background: var(--text-primary); color: var(--bg); }
+
+    /* ── Keyboard ───────────────────────────── */
+    #keyboard {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      width: 100%;
+      max-width: 400px;
+    }
+    .key-row { display: flex; gap: 5px; justify-content: center; }
+    .key {
+      height: 56px;
+      flex: 1;
+      max-width: 42px;
+      border-radius: 4px;
+      border: none;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      background: var(--key-bg);
+      color: var(--key-text);
+    }
+    .key.wide { max-width: 64px; font-size: 11px; }
+    .key[data-state="correct"] { background: var(--correct); color: #fff; }
+    .key[data-state="present"] { background: var(--present); color: #fff; }
+    .key[data-state="absent"]  { background: var(--absent-tile); color: #fff; }
+
+    /* ── About ──────────────────────────────── */
+    #about {
+      width: 100%;
+      max-width: 480px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0;
+      overflow: hidden;
+    }
+    #about summary {
+      padding: 10px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--text-secondary);
+      list-style: none;
+    }
+    #about summary::before { content: 'ℹ️ '; }
+    .about-body {
+      padding: 0 16px 14px;
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .about-body h4 { font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 2px; }
+
+    /* ── Footer ─────────────────────────────── */
+    footer { font-size: 12px; color: var(--text-secondary); text-align: center; }
+    footer a { color: inherit; }
+  </style>
+</head>
+<body>
+
+<!-- ── Banner ───────────────────────────────────────────────────────── -->
+<div id="banner">
+<svg viewBox="0 0 720 165" xmlns="http://www.w3.org/2000/svg">
+  <rect width="720" height="165" fill="#0d1b2a"/>
+
+  <!-- Decorative tiles spelling WORDLE -->
+  <rect x="28" y="20" width="40" height="40" rx="5" fill="#538d4e"/>
+  <text x="48" y="48" text-anchor="middle" font-family="system-ui" font-size="22" font-weight="700" fill="#fff">W</text>
+
+  <rect x="74" y="20" width="40" height="40" rx="5" fill="#3a3a3c"/>
+  <text x="94" y="48" text-anchor="middle" font-family="system-ui" font-size="22" font-weight="700" fill="#fff">O</text>
+
+  <rect x="120" y="20" width="40" height="40" rx="5" fill="#b59f3b"/>
+  <text x="140" y="48" text-anchor="middle" font-family="system-ui" font-size="22" font-weight="700" fill="#fff">R</text>
+
+  <rect x="166" y="20" width="40" height="40" rx="5" fill="#538d4e"/>
+  <text x="186" y="48" text-anchor="middle" font-family="system-ui" font-size="22" font-weight="700" fill="#fff">D</text>
+
+  <rect x="212" y="20" width="40" height="40" rx="5" fill="#3a3a3c"/>
+  <text x="232" y="48" text-anchor="middle" font-family="system-ui" font-size="22" font-weight="700" fill="#fff">L</text>
+
+  <rect x="258" y="20" width="40" height="40" rx="5" fill="#538d4e"/>
+  <text x="278" y="48" text-anchor="middle" font-family="system-ui" font-size="22" font-weight="700" fill="#fff">E</text>
+
+  <!-- Title -->
+  <text x="318" y="55" font-family="system-ui,-apple-system,sans-serif"
+        font-size="46" font-weight="700" fill="#ffffff" letter-spacing="6">WORDLE</text>
+
+  <!-- Separator -->
+  <line x1="28" y1="72" x2="692" y2="72" stroke="#2a3a4a" stroke-width="1"/>
+
+  <!-- Tagline -->
+  <text x="318" y="92" font-family="system-ui,-apple-system,sans-serif"
+        font-size="13" fill="#6a8fa8" letter-spacing="3.5" font-weight="500">GUESS · THINK · WIN</text>
+
+  <!-- Kids badge -->
+  <rect x="28" y="104" width="76" height="24" rx="5" fill="#1a4a2e"/>
+  <text x="66" y="120" text-anchor="middle" font-family="system-ui" font-size="12" fill="#4caf80" font-weight="600">🧒 Kids</text>
+
+  <!-- Adult badge -->
+  <rect x="112" y="104" width="80" height="24" rx="5" fill="#0d2a4a"/>
+  <text x="152" y="120" text-anchor="middle" font-family="system-ui" font-size="12" fill="#5a9fd4" font-weight="600">🧠 Adult</text>
+
+  <!-- BodhiProtocol wordmark -->
+  <text font-family="system-ui,-apple-system,sans-serif" font-size="14" font-weight="700" y="120">
+    <tspan x="580" fill="#ffffff">Bodhi</tspan><tspan fill="#38BDF8"> Protocol</tspan>
+  </text>
+</svg>
+</div>
+
+<!-- ── Mode Toggle ───────────────────────────────────────────────────── -->
+<div id="mode-toggle">
+  <button id="btn-kids" class="active" onclick="setMode('kids')">🧒 Kids (3 letters)</button>
+  <button id="btn-adult" onclick="setMode('adult')">🧠 Adult (5 letters)</button>
+</div>
+
+<!-- ── Grid ─────────────────────────────────────────────────────────── -->
+<div id="grid-wrap"></div>
+
+<!-- ── Legend ───────────────────────────────────────────────────────── -->
+<div id="legend">🟩 right spot &nbsp;·&nbsp; 🟨 wrong spot &nbsp;·&nbsp; ⬜ not in word</div>
+
+<!-- ── Message ───────────────────────────────────────────────────────── -->
+<div id="msg"></div>
+
+<!-- ── Actions ───────────────────────────────────────────────────────── -->
+<div id="action-row">
+  <button id="hint-btn" onclick="useHint()">💡 Hint</button>
+  <button id="new-game-btn" onclick="initGame()">New Game</button>
+</div>
+
+<!-- ── Keyboard ──────────────────────────────────────────────────────── -->
+<div id="keyboard"></div>
+
+<!-- ── About ─────────────────────────────────────────────────────────── -->
+<details id="about">
+  <summary>About Wordle</summary>
+  <div class="about-body">
+    <div>
+      <h4>The Origin</h4>
+      <p>Created by <strong>Josh Wardle</strong> in 2021 as a gift for his partner. After going viral, <em>The New York Times</em> bought it in 2022 for over $1 million. It now has millions of daily players worldwide.</p>
+    </div>
+    <div>
+      <h4>How to Play</h4>
+      <p>Guess the hidden word. After each guess, tiles show how close you are — 🟩 right letter right spot, 🟨 right letter wrong spot, ⬜ letter not in the word. Kids mode: 3-letter words, 8 tries, 1 hint. Adult mode: 5-letter words, 6 tries, no hints.</p>
+    </div>
+    <div>
+      <h4>Strategy Tips</h4>
+      <ul style="padding-left:16px">
+        <li>Start with a word that uses common letters: <strong>CRANE</strong> or <strong>SLATE</strong></li>
+        <li>Use yellow letters in a different position next guess</li>
+        <li>Eliminate vowels early — most words have 1-2</li>
+      </ul>
+    </div>
+  </div>
+</details>
+
+<footer>
+  Zero dependencies · Works offline ·
+  <a href="https://github.com/BodhiProtocol" target="_blank">BodhiProtocol</a>
+</footer>
+
+<script>
+/* ── Word Lists ─────────────────────────────────────────────────── */
+const KIDS_WORDS = [
+  'act','age','aid','ant','ape','arc','arm','art','bad','bag',
+  'ban','bar','bat','bay','bed','big','bit','bow','box','boy',
+  'bud','bug','bun','bus','cab','can','cap','car','cat','cow',
+  'cry','cup','cut','den','dig','dip','dog','dot','dry','ear',
+  'eat','egg','end','eye','fan','far','fat','fig','fit','fly',
+  'fog','fox','fun','fur','gap','gas','get','god','gum','gun',
+  'gut','ham','hat','hay','hen','hip','hit','hop','hot','hug',
+  'hut','ice','ink','jar','jet','job','jog','joy','jug','key',
+  'kid','kit','lap','law','let','lid','lip','log','lot','man',
+  'map','mat','men','mix','mob','mud','nap','net','nod','not',
+  'now','nut','oak','odd','oil','old','owl','pad','pan','pay',
+  'peg','pen','pet','pie','pig','pin','pit','pop','pot','pup',
+  'put','rag','ram','ran','rap','rat','raw','red','rib','rid',
+  'rob','rod','rot','row','rub','rug','rum','run','sad','sap',
+  'saw','say','sea','set','shy','sin','sip','sit','six','ski',
+  'sky','sob','son','spy','sub','sun','tab','tan','tap','tar',
+  'tea','ten','tie','tin','tip','toe','ton','top','toy','try',
+  'tub','tug','two','urn','van','vat','war','wax','way','web',
+  'wet','wig','win','wit','yam','yew','zip','zoo'
+];
+
+const ADULT_WORDS = [
+  'about','above','abuse','actor','admit','adopt','after','again',
+  'agent','agree','ahead','alarm','album','alert','alike','alive',
+  'allow','alone','along','alter','angel','anger','angle','ankle',
+  'apart','apple','apply','arena','argue','arise','armor','arrow',
+  'aside','asset','attic','avoid','awake','award','aware','awful',
+  'basic','beach','beard','beast','begin','below','bench','birth',
+  'black','blade','blame','blank','blast','blaze','bleed','bless',
+  'blind','block','blood','bloom','board','bonus','boost','bound',
+  'brace','brain','brave','bread','break','breed','brick','brief',
+  'bring','broad','broke','brook','brown','brush','build','built',
+  'burst','buyer','candy','carry','catch','cause','chain','chair',
+  'chaos','charm','chase','cheap','check','chess','chest','chief',
+  'child','civic','civil','claim','clash','class','clean','clear',
+  'clerk','click','cliff','climb','cling','clock','close','cloud',
+  'coach','coast','color','comic','coral','count','court','cover',
+  'crack','craft','crane','crash','crawl','crazy','cream','creek',
+  'crime','crisp','cross','crowd','crown','cruel','crush','curve',
+  'cycle','daily','dance','death','delay','dense','depth','devil',
+  'dirty','dodge','doubt','dough','draft','drain','drama','dread',
+  'dream','dress','dried','drift','drink','drive','drown','early',
+  'earth','eight','elite','empty','enemy','enter','equal','error',
+  'essay','exact','exist','extra','faint','faith','false','fancy',
+  'fatal','fault','feast','fever','fiber','field','fifth','fifty',
+  'fight','final','first','fixed','flame','fleet','flesh','float',
+  'flood','floor','flour','focus','force','forge','forth','forum',
+  'found','frame','frank','fraud','fresh','front','froze','fruit',
+  'fully','funny','giant','given','glass','globe','gloom','glory',
+  'glove','grace','grade','grain','grand','grant','grass','grave',
+  'great','greed','green','greet','grief','grill','grind','groan',
+  'gross','group','grown','guard','guess','guest','guide','guild',
+  'guilt','handy','happy','harsh','haste','haunt','haven','heart',
+  'heavy','hence','honor','horse','hotel','house','human','humor',
+  'ideal','image','imply','index','inner','input','issue','jewel',
+  'judge','juice','juicy','jumbo','knife','knock','known','label',
+  'lance','large','laser','later','laugh','layer','learn','least',
+  'leave','legal','lemon','level','light','limit','local','lodge',
+  'logic','loose','lover','lower','lucky','magic','major','maker',
+  'march','marry','mayor','media','mercy','merge','merit','metal',
+  'might','minor','minus','model','money','month','moral','motor',
+  'mourn','mouth','movie','music','naval','nerve','never','night',
+  'noble','noise','north','noted','novel','nurse','occur','ocean',
+  'offer','often','olive','onset','opera','orbit','order','outer',
+  'paint','panel','panic','patch','pause','peace','pearl','penny',
+  'perch','phase','phone','photo','piano','piece','pilot','pitch',
+  'pixel','pizza','place','plain','plane','plant','plate','plaza',
+  'point','pound','power','press','price','pride','prime','print',
+  'prior','prize','probe','proof','prose','proud','prove','pulse',
+  'pupil','purse','queen','query','quest','quick','quiet','quota',
+  'quote','radar','radio','raise','rally','range','rapid','ratio',
+  'reach','ready','realm','rebel','refer','reign','relax','reply',
+  'rider','rifle','right','rigid','risky','rival','river','robot',
+  'rocky','rough','round','route','royal','ruler','rural','sadly',
+  'saint','salad','sauce','scale','scene','scope','score','scout',
+  'sense','serve','seven','shade','shaft','shake','shame','shape',
+  'share','sharp','shelf','shell','shift','shirt','shock','shoot',
+  'shore','short','shout','sight','since','sixth','sixty','skill',
+  'skull','sleep','slice','slide','slope','small','smart','smell',
+  'smile','smoke','snack','snake','solar','solid','solve','sorry',
+  'south','space','spare','spark','speak','speed','spend','spine',
+  'spoon','sport','squad','stack','staff','stage','stain','stair',
+  'stake','stamp','stand','stark','start','state','steam','steel',
+  'steep','steer','stern','stick','stiff','still','stock','stone',
+  'store','storm','story','stout','stove','strip','study','style',
+  'sugar','suite','surge','swamp','swear','sweep','sweet','swift',
+  'table','taste','teach','teeth','tempo','tense','thank','theme',
+  'thick','thing','think','third','thorn','those','three','throw',
+  'thumb','tiger','tight','tired','title','today','token','tooth',
+  'topic','torch','total','touch','tough','tower','trace','track',
+  'trade','trail','train','trash','tread','treat','trend','trial',
+  'trick','tried','troop','trout','truly','trunk','trust','truth',
+  'tumor','twist','ultra','uncle','under','union','unite','until',
+  'upper','upset','urban','usage','usher','usual','valid','value',
+  'valve','vault','viral','virus','visit','vital','vocal','voice',
+  'voter','waist','watch','water','weave','wedge','weigh','weird',
+  'whale','wheat','where','which','while','white','whole','whose',
+  'witch','woman','world','worry','worse','worst','worth','would',
+  'wound','write','wrong','yacht','yield','young','youth','zebra'
+];
+
+/* ── Config ─────────────────────────────────────────────────────── */
+const MODES = {
+  kids:  { len: 3, tries: 8, words: KIDS_WORDS,  tileSize: 68, fontSize: '28px' },
+  adult: { len: 5, tries: 6, words: ADULT_WORDS, tileSize: 58, fontSize: '22px' }
+};
+
+const WIN_MSGS = ['🎉 Genius!','🎉 Magnificent!','🎉 Impressive!','🎉 Splendid!','🎉 Great!','🎉 Phew!','🎉 You got it!','🎉 Lucky!'];
+
+/* ── State ─────────────────────────────────────────────────────── */
+let target, guesses, current, mode = 'kids', gameOver, won, hintUsed;
+
+/* ── Mode ───────────────────────────────────────────────────────── */
+function setMode(m) {
+  mode = m;
+  document.getElementById('btn-kids').classList.toggle('active', m === 'kids');
+  document.getElementById('btn-adult').classList.toggle('active', m === 'adult');
+  initGame();
+}
+
+/* ── Init ───────────────────────────────────────────────────────── */
+function initGame() {
+  const cfg = MODES[mode];
+  target = cfg.words[Math.floor(Math.random() * cfg.words.length)].toUpperCase();
+  guesses = [];
+  current = '';
+  gameOver = false;
+  won = false;
+  hintUsed = false;
+  document.getElementById('msg').textContent = '';
+  const hintBtn = document.getElementById('hint-btn');
+  hintBtn.disabled = false;
+  hintBtn.style.display = mode === 'kids' ? 'inline-block' : 'none';
+  render();
+}
+
+/* ── Tile state algorithm (handles duplicate letters) ────────────── */
+function getStates(guess, tgt) {
+  const result = Array(tgt.length).fill('absent');
+  const t = tgt.split('');
+  const g = guess.split('');
+  for (let i = 0; i < tgt.length; i++) {
+    if (g[i] === t[i]) { result[i] = 'correct'; t[i] = null; g[i] = null; }
+  }
+  for (let i = 0; i < tgt.length; i++) {
+    if (!g[i]) continue;
+    const j = t.indexOf(g[i]);
+    if (j !== -1) { result[i] = 'present'; t[j] = null; }
+  }
+  return result;
+}
+
+/* ── Input ───────────────────────────────────────────────────────── */
+function addLetter(l) {
+  if (gameOver) return;
+  if (current.length < MODES[mode].len) current += l;
+  render();
+}
+
+function deleteLetter() {
+  if (gameOver) return;
+  current = current.slice(0, -1);
+  render();
+}
+
+function submit() {
+  if (gameOver) return;
+  const cfg = MODES[mode];
+  if (current.length !== cfg.len) { showMsg('Not enough letters'); return; }
+  if (!cfg.words.includes(current.toLowerCase())) { showMsg('Not in word list'); return; }
+
+  const states = getStates(current, target);
+  guesses.push({ word: current, states });
+
+  if (current === target) {
+    won = true; gameOver = true;
+    showMsg(WIN_MSGS[Math.min(guesses.length - 1, WIN_MSGS.length - 1)]);
+  } else if (guesses.length >= cfg.tries) {
+    gameOver = true;
+    showMsg(`The word was ${target}`);
+  } else {
+    document.getElementById('msg').textContent = '';
+  }
+
+  current = '';
+  render();
+}
+
+/* ── Hint (kids only) ────────────────────────────────────────────── */
+function useHint() {
+  if (hintUsed || gameOver) return;
+  hintUsed = true;
+  document.getElementById('hint-btn').disabled = true;
+  const correct = new Set();
+  guesses.forEach(g => g.states.forEach((s, i) => { if (s === 'correct') correct.add(i); }));
+  const unknown = [...Array(target.length).keys()].filter(i => !correct.has(i));
+  if (!unknown.length) return;
+  const pos = unknown[Math.floor(Math.random() * unknown.length)];
+  showMsg(`💡 Position ${pos + 1} is "${target[pos]}"`);
+}
+
+function showMsg(text) {
+  document.getElementById('msg').textContent = text;
+}
+
+/* ── Render ──────────────────────────────────────────────────────── */
+function render() { renderGrid(); renderKeyboard(); }
+
+function renderGrid() {
+  const cfg = MODES[mode];
+  const wrap = document.getElementById('grid-wrap');
+  wrap.innerHTML = '';
+
+  for (let row = 0; row < cfg.tries; row++) {
+    const rowDiv = document.createElement('div');
+    rowDiv.className = 'tile-row';
+
+    for (let col = 0; col < cfg.len; col++) {
+      const tile = document.createElement('div');
+      tile.className = 'tile';
+      tile.style.cssText = `width:${cfg.tileSize}px;height:${cfg.tileSize}px;font-size:${cfg.fontSize}`;
+
+      if (row < guesses.length) {
+        tile.textContent = guesses[row].word[col];
+        tile.setAttribute('data-state', guesses[row].states[col]);
+      } else if (row === guesses.length && !gameOver) {
+        tile.textContent = current[col] || '';
+        if (current[col]) tile.setAttribute('data-state', 'tbd');
+      }
+
+      rowDiv.appendChild(tile);
+    }
+    wrap.appendChild(rowDiv);
+  }
+}
+
+function renderKeyboard() {
+  const STATE_RANK = { correct: 3, present: 2, absent: 1 };
+  const keyStates = {};
+  guesses.forEach(g => {
+    g.word.split('').forEach((letter, i) => {
+      const s = g.states[i];
+      if (!keyStates[letter] || STATE_RANK[s] > STATE_RANK[keyStates[letter]]) keyStates[letter] = s;
+    });
+  });
+
+  const kb = document.getElementById('keyboard');
+  kb.innerHTML = '';
+  const rows = [
+    ['Q','W','E','R','T','Y','U','I','O','P'],
+    ['A','S','D','F','G','H','J','K','L'],
+    ['ENTER','Z','X','C','V','B','N','M','⌫']
+  ];
+
+  rows.forEach(row => {
+    const rowDiv = document.createElement('div');
+    rowDiv.className = 'key-row';
+    row.forEach(k => {
+      const btn = document.createElement('button');
+      btn.className = 'key' + (k.length > 1 ? ' wide' : '');
+      btn.textContent = k;
+      if (keyStates[k]) btn.setAttribute('data-state', keyStates[k]);
+      btn.addEventListener('click', () => {
+        if (k === 'ENTER') submit();
+        else if (k === '⌫') deleteLetter();
+        else addLetter(k);
+      });
+      rowDiv.appendChild(btn);
+    });
+    kb.appendChild(rowDiv);
+  });
+}
+
+/* ── Physical keyboard ───────────────────────────────────────────── */
+document.addEventListener('keydown', e => {
+  if (e.ctrlKey || e.altKey || e.metaKey) return;
+  if (e.key === 'Enter') submit();
+  else if (e.key === 'Backspace') deleteLetter();
+  else if (/^[a-zA-Z]$/.test(e.key)) addLetter(e.key.toUpperCase());
+});
+
+/* ── Start ───────────────────────────────────────────────────────── */
+initGame();
+</script>
+</body>
+</html>
