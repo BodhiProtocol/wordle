@@ -11,26 +11,26 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg: #f0f2f5;
+      --bg: #f9f9f7;
       --surface: #ffffff;
-      --border: #d0d7de;
-      --text-primary: #1f2328;
-      --text-secondary: #656d76;
-      --radius: 6px;
-      --correct: #538d4e;
-      --present: #b59f3b;
+      --border: #d3d1cb;
+      --text-primary: #1a1a1a;
+      --text-secondary: #737373;
+      --radius: 8px;
+      --correct: #6aaa64;
+      --present: #c9b458;
       --absent-tile: #787c7e;
       --key-bg: #d3d6da;
-      --key-text: #1f2328;
+      --key-text: #1a1a1a;
     }
 
     @media (prefers-color-scheme: dark) {
       :root {
-        --bg: #0d1117;
-        --surface: #161b22;
-        --border: #30363d;
-        --text-primary: #e6edf3;
-        --text-secondary: #8b949e;
+        --bg: #121213;
+        --surface: #1a1a1b;
+        --border: #3a3a3c;
+        --text-primary: #ffffff;
+        --text-secondary: #818384;
         --absent-tile: #3a3a3c;
         --key-bg: #818384;
         --key-text: #ffffff;
@@ -45,43 +45,53 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 0.75rem 1rem;
+      padding: 0.75rem 1rem 1.5rem;
       gap: 0.55rem;
     }
 
     /* ── Banner ─────────────────────────────── */
-    #banner { width: 100%; max-width: 720px; border-radius: 12px; overflow: hidden; }
+    #banner { width: 100%; max-width: 720px; border-radius: 14px; overflow: hidden;
+              box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
     #banner svg { display: block; width: 100%; height: auto; }
 
     /* ── Mode toggle ────────────────────────── */
     #mode-toggle {
       display: flex;
-      gap: 8px;
+      gap: 6px;
       width: 100%;
-      max-width: 360px;
+      max-width: 340px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 4px;
     }
     #mode-toggle button {
       flex: 1;
       padding: 6px 0;
-      border-radius: var(--radius);
-      border: 1.5px solid var(--border);
-      font-size: 13px;
-      font-weight: 600;
+      border-radius: 7px;
+      border: none;
+      font-size: 12px;
+      font-weight: 700;
       cursor: pointer;
-      background: var(--surface);
+      background: transparent;
       color: var(--text-secondary);
+      transition: all 0.2s;
     }
     #mode-toggle button.active {
       background: var(--correct);
       color: #fff;
-      border-color: var(--correct);
+      box-shadow: 0 1px 4px rgba(106,170,100,0.4);
     }
 
     /* ── Try counter ────────────────────────── */
     #try-counter {
-      font-size: 12px;
+      font-size: 11px;
+      font-weight: 600;
       color: var(--text-secondary);
-      font-weight: 500;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 3px 12px;
       letter-spacing: 0.5px;
     }
 
@@ -89,87 +99,131 @@
     #grid-wrap {
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 5px;
     }
-    .tile-row { display: flex; gap: 4px; }
+    .tile-row { display: flex; gap: 5px; }
 
     .tile {
       display: flex;
       align-items: center;
       justify-content: center;
-      font-weight: 700;
+      font-weight: 800;
       border: 2px solid var(--border);
-      border-radius: 3px;
+      border-radius: 4px;
       background: var(--surface);
       color: var(--text-primary);
       user-select: none;
-      transition: border-color 0.05s;
+      transition: transform 0.22s ease, border-color 0.05s;
+      will-change: transform;
     }
-    .tile[data-state="tbd"]     { border-color: #999; }
-    .tile[data-state="correct"] { background: var(--correct);     color: #fff; border-color: var(--correct); }
-    .tile[data-state="present"] { background: var(--present);     color: #fff; border-color: var(--present); }
-    .tile[data-state="absent"]  { background: var(--absent-tile); color: #fff; border-color: var(--absent-tile); }
+
+    .tile[data-state="tbd"] {
+      border-color: #888;
+      box-shadow: 0 0 0 2px rgba(106,170,100,0.15);
+    }
+    .tile[data-state="correct"] {
+      background: var(--correct); color: #fff;
+      border-color: var(--correct);
+      box-shadow: 0 2px 8px rgba(106,170,100,0.35);
+    }
+    .tile[data-state="present"] {
+      background: var(--present); color: #fff;
+      border-color: var(--present);
+      box-shadow: 0 2px 8px rgba(201,180,88,0.35);
+    }
+    .tile[data-state="absent"] {
+      background: var(--absent-tile); color: #fff;
+      border-color: var(--absent-tile);
+    }
 
     /* ── Animations ─────────────────────────── */
-    @keyframes pop   { 0%,100%{transform:scale(1)}  50%{transform:scale(1.12)} }
-    @keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-6px)} 40%{transform:translateX(6px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(4px)} }
-    @keyframes fadeUp { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes pop   { 0%,100%{transform:scale(1)}  50%{transform:scale(1.1)} }
+    @keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-8px)} 60%{transform:translateX(8px)} 80%{transform:translateX(-4px)} }
+    .pop   { animation: pop   0.1s ease; }
+    .shake { animation: shake 0.4s ease; }
 
-    .pop   { animation: pop   0.12s ease; }
-    .shake { animation: shake 0.4s  ease; }
-
-    /* ── Toast message ──────────────────────── */
-    #msg {
-      min-height: 20px;
-      font-size: 13px;
-      font-weight: 600;
-      text-align: center;
-      color: var(--text-primary);
+    /* ── Floating toast ─────────────────────── */
+    #toast {
+      position: fixed;
+      top: 12%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--text-primary);
+      color: var(--bg);
+      font-size: 14px;
+      font-weight: 700;
+      padding: 10px 20px;
+      border-radius: 8px;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.15s;
+      z-index: 100;
+      white-space: nowrap;
     }
-    #msg.toast { animation: fadeUp 0.2s ease; }
+    #toast.show { opacity: 1; }
 
     /* ── Legend ─────────────────────────────── */
-    #legend { font-size: 11px; color: var(--text-secondary); text-align: center; }
+    #legend {
+      font-size: 11px;
+      color: var(--text-secondary);
+      text-align: center;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .legend-dot {
+      width: 12px; height: 12px;
+      border-radius: 2px;
+      display: inline-block;
+      vertical-align: middle;
+    }
 
     /* ── Action row ─────────────────────────── */
     #action-row { display: flex; gap: 10px; }
     #action-row button {
-      padding: 7px 20px;
+      padding: 9px 22px;
       border-radius: var(--radius);
       border: none;
       font-size: 13px;
-      font-weight: 600;
+      font-weight: 700;
       cursor: pointer;
+      letter-spacing: 0.3px;
+      transition: transform 0.1s, opacity 0.1s;
     }
-    #hint-btn     { background: var(--present); color: #fff; }
-    #hint-btn:disabled { opacity: 0.4; cursor: default; }
-    #new-game-btn { background: var(--text-primary); color: var(--bg); }
+    #action-row button:active { transform: scale(0.97); }
+    #hint-btn     { background: var(--present); color: #fff; box-shadow: 0 2px 6px rgba(201,180,88,0.4); }
+    #hint-btn:disabled { opacity: 0.35; cursor: default; box-shadow: none; }
+    #new-game-btn { background: var(--text-primary); color: var(--bg); box-shadow: 0 2px 6px rgba(0,0,0,0.15); }
 
     /* ── Keyboard ───────────────────────────── */
     #keyboard {
       display: flex;
       flex-direction: column;
-      gap: 5px;
+      gap: 6px;
       width: 100%;
       max-width: 390px;
     }
-    .key-row { display: flex; gap: 4px; justify-content: center; }
+    .key-row { display: flex; gap: 5px; justify-content: center; }
     .key {
-      height: 48px;
+      height: 50px;
       flex: 1;
       max-width: 40px;
-      border-radius: 4px;
+      border-radius: 5px;
       border: none;
-      font-size: 12px;
+      font-size: 13px;
       font-weight: 700;
       cursor: pointer;
       background: var(--key-bg);
       color: var(--key-text);
+      box-shadow: 0 2px 0 rgba(0,0,0,0.2);
+      transition: transform 0.08s, box-shadow 0.08s, background 0.15s;
+      active-opacity: 0.8;
     }
-    .key.wide { max-width: 60px; font-size: 10px; }
-    .key[data-state="correct"] { background: var(--correct);     color: #fff; }
-    .key[data-state="present"] { background: var(--present);     color: #fff; }
-    .key[data-state="absent"]  { background: var(--absent-tile); color: #fff; }
+    .key:active { transform: translateY(2px); box-shadow: 0 0 0 rgba(0,0,0,0.2); }
+    .key.wide { max-width: 62px; font-size: 10px; }
+    .key[data-state="correct"] { background: var(--correct); color: #fff; box-shadow: 0 2px 0 rgba(53,117,50,0.6); }
+    .key[data-state="present"] { background: var(--present); color: #fff; box-shadow: 0 2px 0 rgba(150,130,40,0.6); }
+    .key[data-state="absent"]  { background: var(--absent-tile); color: #fff; box-shadow: 0 2px 0 rgba(30,30,30,0.4); }
 
     /* ── About ──────────────────────────────── */
     #about {
@@ -207,50 +261,32 @@
 </head>
 <body>
 
+<!-- ── Floating toast ────────────────────────────────────────────────── -->
+<div id="toast"></div>
+
 <!-- ── Banner ───────────────────────────────────────────────────────── -->
 <div id="banner">
 <svg viewBox="0 0 720 145" xmlns="http://www.w3.org/2000/svg">
   <rect width="720" height="145" fill="#0d1b2a"/>
-
-  <!-- Decorative tiles spelling WORDLE -->
-  <rect x="28" y="16" width="38" height="38" rx="4" fill="#538d4e"/>
+  <rect x="28" y="16" width="38" height="38" rx="4" fill="#6aaa64"/>
   <text x="47" y="42" text-anchor="middle" font-family="system-ui" font-size="21" font-weight="700" fill="#fff">W</text>
-
   <rect x="72" y="16" width="38" height="38" rx="4" fill="#3a3a3c"/>
   <text x="91" y="42" text-anchor="middle" font-family="system-ui" font-size="21" font-weight="700" fill="#fff">O</text>
-
-  <rect x="116" y="16" width="38" height="38" rx="4" fill="#b59f3b"/>
+  <rect x="116" y="16" width="38" height="38" rx="4" fill="#c9b458"/>
   <text x="135" y="42" text-anchor="middle" font-family="system-ui" font-size="21" font-weight="700" fill="#fff">R</text>
-
-  <rect x="160" y="16" width="38" height="38" rx="4" fill="#538d4e"/>
+  <rect x="160" y="16" width="38" height="38" rx="4" fill="#6aaa64"/>
   <text x="179" y="42" text-anchor="middle" font-family="system-ui" font-size="21" font-weight="700" fill="#fff">D</text>
-
   <rect x="204" y="16" width="38" height="38" rx="4" fill="#3a3a3c"/>
   <text x="223" y="42" text-anchor="middle" font-family="system-ui" font-size="21" font-weight="700" fill="#fff">L</text>
-
-  <rect x="248" y="16" width="38" height="38" rx="4" fill="#538d4e"/>
+  <rect x="248" y="16" width="38" height="38" rx="4" fill="#6aaa64"/>
   <text x="267" y="42" text-anchor="middle" font-family="system-ui" font-size="21" font-weight="700" fill="#fff">E</text>
-
-  <!-- Title -->
-  <text x="306" y="50" font-family="system-ui,-apple-system,sans-serif"
-        font-size="44" font-weight="700" fill="#ffffff" letter-spacing="6">WORDLE</text>
-
-  <!-- Separator -->
+  <text x="306" y="50" font-family="system-ui,-apple-system,sans-serif" font-size="44" font-weight="700" fill="#ffffff" letter-spacing="6">WORDLE</text>
   <line x1="28" y1="66" x2="692" y2="66" stroke="#2a3a4a" stroke-width="1"/>
-
-  <!-- Tagline -->
-  <text x="306" y="86" font-family="system-ui,-apple-system,sans-serif"
-        font-size="12" fill="#6a8fa8" letter-spacing="3.5" font-weight="500">GUESS · THINK · WIN</text>
-
-  <!-- Kids badge -->
+  <text x="306" y="86" font-family="system-ui,-apple-system,sans-serif" font-size="12" fill="#6a8fa8" letter-spacing="3.5" font-weight="500">GUESS · THINK · WIN</text>
   <rect x="28" y="98" width="76" height="24" rx="5" fill="#1a4a2e"/>
   <text x="66" y="114" text-anchor="middle" font-family="system-ui" font-size="12" fill="#4caf80" font-weight="600">🧒 Kids</text>
-
-  <!-- Adult badge -->
   <rect x="112" y="98" width="80" height="24" rx="5" fill="#0d2a4a"/>
   <text x="152" y="114" text-anchor="middle" font-family="system-ui" font-size="12" fill="#5a9fd4" font-weight="600">🧠 Adult</text>
-
-  <!-- BodhiProtocol wordmark -->
   <text font-family="system-ui,-apple-system,sans-serif" font-size="13" font-weight="700" y="114">
     <tspan x="586" fill="#ffffff">Bodhi</tspan><tspan fill="#38BDF8"> Protocol</tspan>
   </text>
@@ -270,10 +306,11 @@
 <div id="grid-wrap"></div>
 
 <!-- ── Legend ───────────────────────────────────────────────────────── -->
-<div id="legend">🟩 right spot &nbsp;·&nbsp; 🟨 wrong spot &nbsp;·&nbsp; ⬜ not in word</div>
-
-<!-- ── Message ───────────────────────────────────────────────────────── -->
-<div id="msg"></div>
+<div id="legend">
+  <span class="legend-dot" style="background:var(--correct)"></span> right spot &nbsp;·&nbsp;
+  <span class="legend-dot" style="background:var(--present)"></span> wrong spot &nbsp;·&nbsp;
+  <span class="legend-dot" style="background:var(--absent-tile)"></span> not in word
+</div>
 
 <!-- ── Actions ───────────────────────────────────────────────────────── -->
 <div id="action-row">
@@ -294,23 +331,20 @@
     </div>
     <div>
       <h4>How to Play</h4>
-      <p>Guess the hidden word. Each guess must be a real word. After each guess, tiles reveal how close you are — 🟩 right letter right spot, 🟨 right letter wrong spot, ⬜ not in the word. Kids: 3-letter words, 8 tries, 1 hint. Adult: 5-letter words, 6 tries, no hints.</p>
+      <p>Guess the hidden word. Each guess must be a real word. Tiles show how close you are — 🟩 right letter right spot, 🟨 right letter wrong spot, ⬜ not in the word. Kids: 3-letter words, 8 tries, 1 hint. Adult: 5-letter words, 6 tries, no hints.</p>
     </div>
     <div>
       <h4>Strategy Tips</h4>
       <ul style="padding-left:16px">
         <li>Start with a word rich in common letters — try <strong>CRANE</strong> or <strong>SLATE</strong></li>
         <li>Use yellow letters in a different position next guess</li>
-        <li>Eliminate as many letters as possible in your first two guesses</li>
+        <li>Eliminate as many letters as possible early</li>
       </ul>
     </div>
   </div>
 </details>
 
-<footer>
-  Zero dependencies · Works offline ·
-  <a href="https://github.com/BodhiProtocol" target="_blank">BodhiProtocol</a>
-</footer>
+<footer>Zero dependencies · Works offline · <a href="https://github.com/BodhiProtocol" target="_blank">BodhiProtocol</a></footer>
 
 <script>
 /* ── Word Lists ─────────────────────────────────────────────────── */
@@ -421,15 +455,15 @@ const MODES = {
   kids:  { len: 3, tries: 8, words: KIDS_WORDS,  tileSize: 52, fontSize: '24px' },
   adult: { len: 5, tries: 6, words: ADULT_WORDS, tileSize: 54, fontSize: '20px' }
 };
-
 const WIN_MSGS = ['🎉 Genius!','🎉 Magnificent!','🎉 Impressive!','🎉 Splendid!','🎉 Great!','🎉 Phew!','🎉 You got it!','🎉 Lucky!'];
 
 /* ── State ─────────────────────────────────────────────────────── */
-let target, guesses, current, mode = 'kids', gameOver, won, hintUsed;
+let target, guesses, current, mode = 'kids', gameOver, won, hintUsed, animating = false;
 let toastTimer = null;
 
 /* ── Mode ───────────────────────────────────────────────────────── */
 function setMode(m) {
+  if (animating) return;
   mode = m;
   document.getElementById('btn-kids').classList.toggle('active', m === 'kids');
   document.getElementById('btn-adult').classList.toggle('active', m === 'adult');
@@ -438,25 +472,20 @@ function setMode(m) {
 
 /* ── Init ───────────────────────────────────────────────────────── */
 function initGame() {
+  if (animating) return;
   const cfg = MODES[mode];
   target = cfg.words[Math.floor(Math.random() * cfg.words.length)].toUpperCase();
-  guesses = [];
-  current = '';
-  gameOver = false;
-  won = false;
-  hintUsed = false;
-  clearMsg();
+  guesses = []; current = ''; gameOver = false; won = false; hintUsed = false;
   const hintBtn = document.getElementById('hint-btn');
   hintBtn.disabled = false;
   hintBtn.style.display = mode === 'kids' ? 'inline-block' : 'none';
   render();
 }
 
-/* ── Tile state algorithm (handles duplicate letters) ────────────── */
+/* ── Tile states (handles duplicates) ───────────────────────────── */
 function getStates(guess, tgt) {
   const result = Array(tgt.length).fill('absent');
-  const t = tgt.split('');
-  const g = guess.split('');
+  const t = tgt.split(''), g = guess.split('');
   for (let i = 0; i < tgt.length; i++) {
     if (g[i] === t[i]) { result[i] = 'correct'; t[i] = null; g[i] = null; }
   }
@@ -470,49 +499,70 @@ function getStates(guess, tgt) {
 
 /* ── Input ───────────────────────────────────────────────────────── */
 function addLetter(l) {
-  if (gameOver) return;
-  const len = MODES[mode].len;
-  if (current.length >= len) return;
+  if (gameOver || animating) return;
+  if (current.length >= MODES[mode].len) return;
   current += l;
-  render();
-  // pop animation on the tile just filled
+  renderGrid();
   const rows = document.querySelectorAll('.tile-row');
-  const row = rows[guesses.length];
-  if (row) {
-    const tile = row.children[current.length - 1];
-    if (tile) { tile.classList.add('pop'); tile.addEventListener('animationend', () => tile.classList.remove('pop'), { once: true }); }
-  }
+  const tile = rows[guesses.length]?.children[current.length - 1];
+  if (tile) { tile.classList.add('pop'); tile.addEventListener('animationend', () => tile.classList.remove('pop'), { once: true }); }
 }
 
 function deleteLetter() {
-  if (gameOver) return;
+  if (gameOver || animating) return;
   current = current.slice(0, -1);
-  render();
+  renderGrid();
 }
 
 function submit() {
-  if (gameOver) return;
+  if (gameOver || animating) return;
   const cfg = MODES[mode];
-  if (current.length !== cfg.len) { showMsg('Not enough letters', true); shakeRow(); return; }
-  if (!cfg.words.includes(current.toLowerCase())) { showMsg('Not in word list', true); shakeRow(); return; }
+  if (current.length !== cfg.len) { toast('Not enough letters'); shakeRow(); return; }
+  if (!cfg.words.includes(current.toLowerCase())) { toast('Not in word list'); shakeRow(); return; }
 
   const states = getStates(current, target);
+  const rowIndex = guesses.length;
   guesses.push({ word: current, states });
-
-  if (current === target) {
-    won = true; gameOver = true;
-    showMsg(WIN_MSGS[Math.min(guesses.length - 1, WIN_MSGS.length - 1)]);
-  } else if (guesses.length >= cfg.tries) {
-    gameOver = true;
-    showMsg(`The word was ${target}`);
-  } else {
-    clearMsg();
-  }
-
   current = '';
-  render();
+  animating = true;
+
+  renderGrid(rowIndex); // render without coloring the just-submitted row
+  renderKeyboard();
+  updateCounter();
+  flipReveal(rowIndex, states, () => {
+    animating = false;
+    renderKeyboard();
+    if (guesses[rowIndex].word === target) {
+      won = true; gameOver = true;
+      updateCounter();
+      setTimeout(() => toast(WIN_MSGS[Math.min(rowIndex, WIN_MSGS.length - 1)], false), 300);
+    } else if (guesses.length >= cfg.tries) {
+      gameOver = true;
+      updateCounter();
+      setTimeout(() => toast(`The word was ${target}`, false), 300);
+    }
+  });
 }
 
+/* ── Tile flip reveal ────────────────────────────────────────────── */
+function flipReveal(rowIndex, states, onComplete) {
+  const rowEl = document.querySelectorAll('.tile-row')[rowIndex];
+  if (!rowEl) { onComplete(); return; }
+  const tiles = [...rowEl.children];
+  let done = 0;
+  tiles.forEach((tile, i) => {
+    setTimeout(() => {
+      tile.style.transform = 'rotateX(90deg)';
+      setTimeout(() => {
+        tile.setAttribute('data-state', states[i]);
+        tile.style.transform = 'rotateX(0deg)';
+        if (++done === tiles.length) onComplete();
+      }, 220);
+    }, i * 260);
+  });
+}
+
+/* ── Shake row ───────────────────────────────────────────────────── */
 function shakeRow() {
   const rows = document.querySelectorAll('.tile-row');
   const row = rows[guesses.length];
@@ -523,7 +573,7 @@ function shakeRow() {
 
 /* ── Hint (kids only) ────────────────────────────────────────────── */
 function useHint() {
-  if (hintUsed || gameOver) return;
+  if (hintUsed || gameOver || animating) return;
   hintUsed = true;
   document.getElementById('hint-btn').disabled = true;
   const correct = new Set();
@@ -531,38 +581,29 @@ function useHint() {
   const unknown = [...Array(target.length).keys()].filter(i => !correct.has(i));
   if (!unknown.length) return;
   const pos = unknown[Math.floor(Math.random() * unknown.length)];
-  showMsg(`💡 Position ${pos + 1} is "${target[pos]}"`);
+  toast(`💡 Position ${pos + 1} is "${target[pos]}"`, false);
 }
 
-/* ── Messages ────────────────────────────────────────────────────── */
-function showMsg(text, temporary = false) {
+/* ── Toast ───────────────────────────────────────────────────────── */
+function toast(text, temporary = true) {
   if (toastTimer) clearTimeout(toastTimer);
-  const el = document.getElementById('msg');
+  const el = document.getElementById('toast');
   el.textContent = text;
-  el.className = 'toast';
+  el.classList.add('show');
   if (temporary) {
-    toastTimer = setTimeout(() => { el.textContent = ''; el.className = ''; }, 1600);
+    toastTimer = setTimeout(() => el.classList.remove('show'), 1600);
   }
-}
-
-function clearMsg() {
-  if (toastTimer) clearTimeout(toastTimer);
-  const el = document.getElementById('msg');
-  el.textContent = '';
-  el.className = '';
 }
 
 /* ── Render ──────────────────────────────────────────────────────── */
 function render() { renderGrid(); renderKeyboard(); updateCounter(); }
 
 function updateCounter() {
-  const cfg = MODES[mode];
-  const remaining = cfg.tries - guesses.length;
   document.getElementById('try-counter').textContent =
-    gameOver ? '' : `Guess ${guesses.length + 1} of ${cfg.tries}`;
+    gameOver ? '' : `Guess ${guesses.length + 1} of ${MODES[mode].tries}`;
 }
 
-function renderGrid() {
+function renderGrid(skipColorRow = -1) {
   const cfg = MODES[mode];
   const wrap = document.getElementById('grid-wrap');
   wrap.innerHTML = '';
@@ -578,7 +619,7 @@ function renderGrid() {
 
       if (row < guesses.length) {
         tile.textContent = guesses[row].word[col];
-        tile.setAttribute('data-state', guesses[row].states[col]);
+        if (row !== skipColorRow) tile.setAttribute('data-state', guesses[row].states[col]);
       } else if (row === guesses.length && !gameOver) {
         tile.textContent = current[col] || '';
         if (current[col]) tile.setAttribute('data-state', 'tbd');
@@ -593,22 +634,16 @@ function renderGrid() {
 function renderKeyboard() {
   const STATE_RANK = { correct: 3, present: 2, absent: 1 };
   const keyStates = {};
-  guesses.forEach(g => {
-    g.word.split('').forEach((letter, i) => {
-      const s = g.states[i];
-      if (!keyStates[letter] || STATE_RANK[s] > STATE_RANK[keyStates[letter]]) keyStates[letter] = s;
-    });
-  });
+  guesses.forEach(g => g.word.split('').forEach((l, i) => {
+    const s = g.states[i];
+    if (!keyStates[l] || STATE_RANK[s] > STATE_RANK[keyStates[l]]) keyStates[l] = s;
+  }));
 
   const kb = document.getElementById('keyboard');
   kb.innerHTML = '';
-  const rows = [
-    ['Q','W','E','R','T','Y','U','I','O','P'],
-    ['A','S','D','F','G','H','J','K','L'],
-    ['ENTER','Z','X','C','V','B','N','M','⌫']
-  ];
-
-  rows.forEach(row => {
+  [['Q','W','E','R','T','Y','U','I','O','P'],
+   ['A','S','D','F','G','H','J','K','L'],
+   ['ENTER','Z','X','C','V','B','N','M','⌫']].forEach(row => {
     const rowDiv = document.createElement('div');
     rowDiv.className = 'key-row';
     row.forEach(k => {
@@ -635,7 +670,6 @@ document.addEventListener('keydown', e => {
   else if (/^[a-zA-Z]$/.test(e.key)) addLetter(e.key.toUpperCase());
 });
 
-/* ── Start ───────────────────────────────────────────────────────── */
 initGame();
 </script>
 </body>
