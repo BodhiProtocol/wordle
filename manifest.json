@@ -1,0 +1,11 @@
+{
+  "name": "Wordle — BodhiProtocol",
+  "short_name": "Wordle",
+  "description": "Guess the hidden word. Kids & Adult modes.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f9f9f7",
+  "theme_color": "#6aaa64",
+  "orientation": "portrait",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml" }]
+}
